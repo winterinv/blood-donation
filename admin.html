@@ -175,7 +175,10 @@
 
     <header class="admin-nav">
         <h2>Blood Buddy <span class="admin-badge">ADMIN</span></h2>
-        <button class="logout-btn" onclick="logoutAdmin()">Secure Logout</button>
+        <div>
+            <button id="sim-btn" class="logout-btn" style="border-color: var(--primary); color: var(--primary); margin-right: 15px;" onclick="startSimulation()">⚡ Start Live Simulator</button>
+            <button class="logout-btn" onclick="logoutAdmin()">Secure Logout</button>
+        </div>
     </header>
 
     <h1 class="hero-title">Network Operations Center</h1>

@@ -143,3 +143,60 @@ async function loadAuditLogs() {
         `;
     });
 }
+
+// --- LIVE SIMULATOR FOR PRESENTATIONS ---
+window.simTimer = null;
+
+async function simulateTraffic() {
+    const hospitalIds = Object.keys(window.hospitalsMap || {});
+    if (hospitalIds.length < 2) {
+        console.warn("Need at least 2 hospitals to simulate traffic");
+        return;
+    }
+    
+    // Pick specific random hospitals
+    const sender = hospitalIds[Math.floor(Math.random() * hospitalIds.length)];
+    let receiver = hospitalIds[Math.floor(Math.random() * hospitalIds.length)];
+    while(receiver === sender) {
+        receiver = hospitalIds[Math.floor(Math.random() * hospitalIds.length)];
+    }
+
+    const bloodGroups = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
+    const bg = bloodGroups[Math.floor(Math.random() * bloodGroups.length)];
+    const units = Math.floor(Math.random() * 8) + 1;
+
+    // 70% chance of pending, 20% issued, 10% rejected
+    const rand = Math.random();
+    const status = rand > 0.8 ? "ISSUED" : (rand > 0.7 ? "REJECTED" : "PENDING");
+
+    const { error } = await supabase.from("blood_transfers").insert({
+        sender_id: sender,
+        receiver_id: receiver,
+        blood_group: bg,
+        units: units,
+        status: status
+    });
+
+    if(!error) {
+        loadTransfers(); // Refresh UI instantly
+    }
+}
+
+window.startSimulation = function() {
+    const btn = document.getElementById("sim-btn");
+    if (window.simTimer) {
+        clearInterval(window.simTimer);
+        window.simTimer = null;
+        btn.innerHTML = "⚡ Start Live Simulator";
+        btn.style.background = "";
+        btn.style.color = "var(--primary)";
+        btn.style.borderColor = "var(--primary)";
+    } else {
+        window.simTimer = setInterval(simulateTraffic, 3000);
+        btn.innerHTML = "🛑 Stop Simulator";
+        btn.style.background = "#ff4757";
+        btn.style.color = "white";
+        btn.style.borderColor = "#ff4757";
+        simulateTraffic(); // Trigger first one immediately
+    }
+}
