@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Hospital Profile</title>
+  <link rel="stylesheet" href="hospital.css">
+
+</head>
+
+<body>
+
+  <div class="card">
+    <h1>Hospital Profile</h1>
+
+    <div class="profile-row">
+      <span>Name:</span>
+      <strong id="name">Loading...</strong>
+    </div>
+
+    <div class="profile-row">
+      <span>City:</span>
+      <strong id="city">Loading...</strong>
+    </div>
+
+    <div class="profile-row">
+      <span>Type:</span>
+      <strong id="type">Loading...</strong>
+    </div>
+
+    <div class="profile-row">
+      <span>Verified:</span>
+      <strong id="verified">Loading...</strong>
+    </div>
+
+    <div class="profile-row">
+      <span>Hospital ID:</span>
+      <strong id="id">Loading...</strong>
+    </div>
+
+    <button class="dashboard-btn" onclick="goDashboard()">
+      Go to Dashboard
+    </button>
+
+  </div>
+
+  <script type="module">
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+
+    const supabase = createClient(
+      "https://bzrxpejjfzlecpugylqx.supabase.co",
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ6cnhwZWpqZnpsZWNwdWd5bHF4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkyNTkxNjksImV4cCI6MjA4NDgzNTE2OX0.tS3GgxA5L969XGQK9Uw4qxTcqco1Y2iytoKcfos0DNU"
+    );
+
+    // Get hospital ID from URL instead of auth session
+    const params = new URLSearchParams(window.location.search);
+    const hospitalId = params.get("id");
+
+    if (!hospitalId) {
+      alert("Session expired. Please login again.");
+      window.location.href = "hospital-login.html";
+    }
+
+    // Load hospital profile
+    async function loadProfile() {
+      const { data, error } = await supabase
+        .from("hospitals")
+        .select("*")
+        .eq("id", hospitalId)
+        .single();
+
+      if (error) {
+        alert("Could not load profile");
+        console.error(error);
+        return;
+      }
+
+      document.getElementById("name").textContent = data.name;
+      document.getElementById("city").textContent = data.city;
+      document.getElementById("type").textContent = data.type;
+      document.getElementById("verified").textContent = data.verified ? "Yes" : "No";
+      document.getElementById("id").textContent = data.id;
+    }
+
+    // Back to dashboard
+    window.goDashboard = function () {
+      window.location.href = "hospital.html?id=" + hospitalId;
+    };
+
+    loadProfile();
+  </script>
+
+
+</body>
+
+</html>

@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Admin Dashboard - Blood Buddy</title>
+    <link rel="stylesheet" href="theme.css?v=2.0">
+    <style>
+        body {
+            background: var(--bg-main);
+            background-image:
+                radial-gradient(circle at 100% 0%, rgba(20, 184, 166, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 0% 100%, rgba(255, 71, 87, 0.02) 0%, transparent 50%);
+            background-attachment: fixed;
+        }
+
+        /* Admin Navbar */
+        .admin-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem 5%;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 2px solid var(--accent);
+            /* Teal Admin Accent */
+            box-shadow: var(--shadow-sm);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .admin-nav h2 {
+            margin: 0;
+            font-size: 1.5rem;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .admin-badge {
+            background: var(--accent);
+            color: white;
+            font-size: 0.8rem;
+            padding: 2px 8px;
+            border-radius: var(--radius-full);
+            font-weight: 700;
+        }
+
+        .hero-title {
+            text-align: center;
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin: 3rem auto 2rem;
+            color: var(--text-main);
+        }
+
+        .admin-panels {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 1.5rem 3rem;
+        }
+
+        /* Wide layout for tables */
+        .panel-section {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 2.5rem;
+            box-shadow: var(--shadow-md);
+            overflow-x: auto;
+        }
+
+        .panel-section h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .panel-section h3 span.count {
+            background: var(--bg-main);
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            padding: 2px 10px;
+            border-radius: var(--radius-full);
+            border: 1px solid var(--border-color);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        th,
+        td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.95rem;
+        }
+
+        th {
+            font-weight: 600;
+            color: var(--text-muted);
+            background: var(--bg-main);
+        }
+
+        th:first-child {
+            border-top-left-radius: var(--radius-md);
+        }
+
+        th:last-child {
+            border-top-right-radius: var(--radius-md);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background: var(--bg-main);
+        }
+
+        .badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: var(--radius-full);
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .badge.active {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        .badge.pending {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .badge.completed {
+            background: #e0e7ff;
+            color: #4338ca;
+        }
+
+        .logout-btn {
+            background: white;
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-full);
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .logout-btn:hover {
+            background: #fef2f2;
+            color: var(--primary);
+            border-color: #fca5a5;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header class="admin-nav">
+        <h2>Blood Buddy <span class="admin-badge">ADMIN</span></h2>
+        <button class="logout-btn" onclick="logoutAdmin()">Secure Logout</button>
+    </header>
+
+    <h1 class="hero-title">Network Operations Center</h1>
+
+    <div class="admin-panels">
+
+        <!-- Registered Hospitals -->
+        <div class="panel-section">
+            <h3>Registered Facilities <span class="count" id="hospital-count">0</span></h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Hospital ID</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Location</th>
+                        <th>Type</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="hospitals-body">
+                    <tr>
+                        <td colspan="6" style="text-align:center;">Loading network data...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Live Inter-Hospital Requests (Chats and Comms) -->
+        <div class="panel-section">
+            <h3>Live Network Communications <span class="count" id="chat-count">0</span></h3>
+            <div id="chats-body" style="display: flex; flex-direction: column; gap: 15px; max-height: 400px; overflow-y: auto; padding-right: 10px;">
+                <p style="text-align: center; color: var(--text-muted);">Loading network communications...</p>
+            </div>
+        </div>
+
+        <!-- Active Blood Transfers -->
+        <div class="panel-section">
+            <h3>Global Blood Transfers <span class="count" id="transfer-count">0</span></h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Transfer ID</th>
+                        <th>From Hospital</th>
+                        <th>To Hospital</th>
+                        <th>Blood Group</th>
+                        <th>Units</th>
+                        <th>Status</th>
+                        <th>Timestamp</th>
+                    </tr>
+                </thead>
+                <tbody id="transfers-body">
+                    <tr>
+                        <td colspan="7" style="text-align:center;">Loading transfer data...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Network Audit Logs -->
+        <div class="panel-section">
+            <h3>Network Audit Logs <span class="count" id="audit-count">0</span></h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Log ID</th>
+                        <th>Hospital ID</th>
+                        <th>Action Type</th>
+                        <th>Description</th>
+                        <th>Timestamp</th>
+                    </tr>
+                </thead>
+                <tbody id="audit-body">
+                    <tr>
+                        <td colspan="5" style="text-align:center;">Loading audit trails...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+    <script type="module" src="admin.js"></script>
+    <script>
+        function logoutAdmin() {
+            localStorage.removeItem('bb_admin_auth');
+            window.location.href = 'admin-login.html';
+        }
+    </script>
+</body>
+
+</html>

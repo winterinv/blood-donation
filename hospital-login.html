@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Hospital Login - Blood Buddy</title>
+  <link rel="stylesheet" href="theme.css?v=2.0">
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background-image:
+        radial-gradient(circle at 0% 0%, rgba(255, 71, 87, 0.05) 0%, transparent 50%),
+        radial-gradient(circle at 100% 100%, rgba(20, 184, 166, 0.05) 0%, transparent 50%);
+    }
+
+    .auth-card {
+      width: 100%;
+      max-width: 400px;
+      padding: 3rem 2.5rem;
+      text-align: center;
+    }
+
+    .auth-card h2 {
+      font-size: 2rem;
+      margin-bottom: 2rem;
+      color: var(--text-main);
+    }
+
+    .input-base {
+      margin-bottom: 1.25rem;
+    }
+
+    .submit-btn {
+      width: 100%;
+      margin-top: 0.5rem;
+    }
+
+    .links-area {
+      margin-top: 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      font-size: 0.95rem;
+    }
+
+    .links-area a {
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 600;
+      transition: color 0.2s;
+    }
+
+    .links-area a:hover {
+      color: var(--primary-hover);
+    }
+
+    .admin-link {
+      color: var(--text-muted) !important;
+      font-size: 0.85rem;
+      margin-top: 1rem;
+    }
+
+    .admin-link:hover {
+      color: var(--text-main) !important;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="glass-panel auth-card">
+    <h2>Hospital Login</h2>
+    <form id="loginForm">
+      <input id="email" type="email" class="input-base" placeholder="Hospital Email" required />
+      <input id="password" type="password" class="input-base" placeholder="Password" required />
+      <button type="submit" class="btn btn-primary submit-btn">Login to Dashboard</button>
+    </form>
+
+    <div class="links-area">
+      <p>New hospital? <a href="hospital-register.html">Register here</a></p>
+      <a href="admin-login.html" class="admin-link">Administrator Login →</a>
+    </div>
+  </div>
+
+  <script type="module" src="hospital-login.js"></script>
+
+</body>
+
+</html>

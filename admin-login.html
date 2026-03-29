@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Admin Portal - Blood Buddy</title>
+    <link rel="stylesheet" href="theme.css?v=2.0">
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-image:
+                radial-gradient(circle at 100% 0%, rgba(20, 184, 166, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 0% 100%, rgba(20, 184, 166, 0.05) 0%, transparent 40%);
+        }
+
+        .auth-card {
+            width: 100%;
+            max-width: 400px;
+            padding: 3rem 2.5rem;
+            text-align: center;
+            border-top: 4px solid var(--accent);
+            /* Teal accent for admin */
+        }
+
+        .auth-card h2 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-main);
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            margin-bottom: 2rem;
+            font-size: 0.95rem;
+        }
+
+        .input-base {
+            margin-bottom: 1.25rem;
+        }
+
+        /* Admin specific button */
+        .submit-btn {
+            width: 100%;
+            margin-top: 0.5rem;
+            background: var(--accent);
+            box-shadow: 0 4px 14px 0 rgba(20, 184, 166, 0.3);
+        }
+
+        .submit-btn:hover {
+            background: #0d9488;
+            box-shadow: 0 6px 20px rgba(20, 184, 166, 0.4);
+        }
+
+        .links-area {
+            margin-top: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            font-size: 0.95rem;
+        }
+
+        .links-area a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .links-area a:hover {
+            color: var(--text-main);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="glass-panel auth-card">
+        <h2>Admin Portal</h2>
+        <p class="subtitle">System Administration Access</p>
+
+        <form id="loginForm">
+            <input id="email" type="email" class="input-base" placeholder="Administrator Email" required />
+            <input id="password" type="password" class="input-base" placeholder="Security Key" required />
+            <button type="submit" class="btn btn-primary submit-btn">Secure Login</button>
+        </form>
+
+        <div class="links-area">
+            <a href="hospital-login.html">← Return to Hospital Login</a>
+        </div>
+    </div>
+
+    <script src="admin-login.js"></script>
+</body>
+
+</html>

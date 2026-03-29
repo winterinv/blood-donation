@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Hospital Dashboard</title>
+  <link rel="stylesheet" href="hospital.css?v=2.0">
+  <!-- Load jsPDF for Documentation Generation -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+
+<body>
+
+  <h1>Hospital Blood Inventory</h1>
+
+  <div class="control-bar">
+    <input id="hospitalId" placeholder="Hospital ID" />
+    <button class="primary-btn" onclick="loadInventory()">Load Inventory</button>
+    <button class="primary-btn" onclick="saveInventory()"
+      style="background: linear-gradient(135deg, #0cebeb, #20e3b2, #29ffc6); color: black;">Save Changes</button>
+  </div>
+
+  <div id="grid" class="grid"></div>
+
+  <hr style="border: 1px solid rgba(255,255,255,0.1); margin: 40px auto; max-width: 1000px;">
+  <h1>Blood Transfer Requests</h1>
+  <div class="messaging-container"
+    style="display: flex; gap: 20px; max-width: 1000px; margin: 0 auto; padding: 0 20px 20px; flex-wrap: wrap;">
+
+    <!-- Send Request Form -->
+    <div class="card" style="flex: 1; min-width: 300px;">
+      <h3>Request Blood Units</h3>
+      <select id="requestReceiver"
+        style="width: 100%; padding: 12px; margin-bottom: 15px; background: rgba(255,255,255,0.9); border-radius: 8px; border: none; font-size: 16px; color: black;">
+        <option value="">Select Target Hospital...</option>
+      </select>
+
+      <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+        <select id="requestBloodGroup"
+          style="flex: 1; padding: 12px; background: rgba(255,255,255,0.9); border-radius: 8px; border: none; font-size: 16px; color: black;">
+          <option value="">Blood Group</option>
+          <option value="A+">A+</option>
+          <option value="A-">A-</option>
+          <option value="B+">B+</option>
+          <option value="B-">B-</option>
+          <option value="O+">O+</option>
+          <option value="O-">O-</option>
+          <option value="AB+">AB+</option>
+          <option value="AB-">AB-</option>
+        </select>
+        <input id="requestUnits" type="number" min="1" placeholder="Units"
+          style="flex: 1; padding: 12px; background: rgba(255,255,255,0.9); border-radius: 8px; border: none; font-size: 16px; color: black;" />
+      </div>
+
+      <button class="primary-btn" onclick="sendBloodRequest()" style="width: 100%;">Submit Request</button>
+    </div>
+
+    <!-- Inbox & Authorizations -->
+    <div class="card" style="flex: 1; min-width: 300px; max-height: 400px; overflow-y: auto;">
+      <h3>Pending Authorizations</h3>
+      <div id="inboxList">
+        <p style="color: #ccc;">Loading requests...</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="messaging-container"
+    style="display: flex; gap: 20px; max-width: 1000px; margin: 0 auto; padding: 0 20px 50px; flex-wrap: wrap;">
+    <!-- Issued / Audit History -->
+    <div class="card" style="flex: 1; width: 100%; max-height: 400px; overflow-y: auto;">
+      <h3>Transfer History & Audit Logs</h3>
+      <div id="historyList">
+        <p style="color: #ccc;">Loading history...</p>
+      </div>
+    </div>
+  </div>
+  <div class="profile-fab" onclick="goProfile()">
+    <img src="Images/hospital-avatar.png" alt="Profile" />
+  </div>
+
+
+  <script type="module">
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+
+    const supabase = createClient(
+      "https://bzrxpejjfzlecpugylqx.supabase.co",
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ6cnhwZWpqZnpsZWNwdWd5bHF4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkyNTkxNjksImV4cCI6MjA4NDgzNTE2OX0.tS3GgxA5L969XGQK9Uw4qxTcqco1Y2iytoKcfos0DNU"
+    );
+
+    // 🔹 PROFILE BUTTON
+    window.goProfile = function () {
+      const hospitalId = new URLSearchParams(window.location.search).get("id");
+      if (!hospitalId) {
+        alert("Session expired. Please login again.");
+        return;
+      }
+      window.location.href = "hospital-profile.html?id=" + hospitalId;
+    };
+
+    // 🔹 LOAD INVENTORY
+    async function loadInventory() {
+      const hospitalId =
+        new URLSearchParams(window.location.search).get("id") ||
+        document.getElementById("hospitalId").value;
+
+      if (!hospitalId) {
+        alert("Enter hospital ID first");
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from("inventory")
+        .select("*")
+        .eq("hospital_id", hospitalId);
+
+      if (error) {
+        console.error(error);
+        alert("Failed to load inventory");
+        return;
+      }
+
+      const grid = document.getElementById("grid");
+      grid.innerHTML = "";
+
+      const bloodGroups = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
+
+      bloodGroups.forEach(bg => {
+        const item = data.find(d => d.blood_group === bg);
+        const units = item ? item.units : 0;
+
+        const card = document.createElement("div");
+        card.className = "card";
+
+        if (units <= 5) card.classList.add("low");
+
+        card.innerHTML = `
+      <h3>${bg}</h3>
+      <p>Units: <span id="units-${bg}">${units}</span></p>
+      <div class="controls">
+        <button onclick="updateUnits('${bg}', -1)">-</button>
+        <button onclick="updateUnits('${bg}', 1)">+</button>
+      </div>
+    `;
+
+        grid.appendChild(card);
+      });
+    }
+
+    // 🔹 MAKE IT GLOBAL (IMPORTANT)
+    window.loadInventory = loadInventory;
+
+    // 🔹 UPDATE UNITS (UI ONLY)
+    window.updateUnits = function (bloodGroup, delta) {
+      const span = document.getElementById(`units-${bloodGroup}`);
+      let units = parseInt(span.textContent) + delta;
+      if (units < 0) units = 0;
+      span.textContent = units;
+    };
+
+    // 🔹 SAVE INVENTORY TO DB
+    window.saveInventory = async function () {
+      const hospitalId =
+        new URLSearchParams(window.location.search).get("id") ||
+        document.getElementById("hospitalId").value;
+
+      if (!hospitalId) {
+        alert("Enter hospital ID first");
+        return;
+      }
+
+      const bloodGroups = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
+      let allSuccess = true;
+
+      // Update button visual state
+      const saveBtn = document.querySelector("button[onclick='saveInventory()']");
+      const originalText = saveBtn.textContent;
+      saveBtn.textContent = "Saving...";
+      saveBtn.disabled = true;
+
+      for (const bloodGroup of bloodGroups) {
+        const span = document.getElementById(`units-${bloodGroup}`);
+        if (!span) continue;
+
+        const units = parseInt(span.textContent);
+
+        const { data: existing } = await supabase
+          .from("inventory")
+          .select("*")
+          .eq("hospital_id", hospitalId)
+          .eq("blood_group", bloodGroup)
+          .maybeSingle();
+
+        if (existing) {
+          const { error } = await supabase
+            .from("inventory")
+            .update({ units })
+            .eq("hospital_id", hospitalId)
+            .eq("blood_group", bloodGroup);
+          if (error) {
+            console.error("Failed to update", error);
+            allSuccess = false;
+          }
+        } else {
+          const { error } = await supabase
+            .from("inventory")
+            .insert({ hospital_id: hospitalId, blood_group: bloodGroup, units });
+          if (error) {
+            console.error("Failed to insert", error);
+            allSuccess = false;
+          }
+        }
+      }
+
+      saveBtn.textContent = originalText;
+      saveBtn.disabled = false;
+
+      if (allSuccess) {
+        alert("Inventory successfully saved to the database!");
+      } else {
+        alert("Some updates failed. Check console for details.");
+      }
+    };
+
+    // 🔹 AUDIT LOGGING FUNCTION
+    async function logAudit(actionType, description) {
+      const hospitalId = new URLSearchParams(window.location.search).get("id") || document.getElementById("hospitalId").value;
+      await supabase.from("audit_logs").insert({
+        hospital_id: hospitalId,
+        action_type: actionType,
+        description: description
+      });
+    }
+
+    // 🔹 LOAD HOSPITALS FOR DROPDOWN
+    async function loadHospitalsForRequest() {
+      const hospitalId = new URLSearchParams(window.location.search).get("id") || document.getElementById("hospitalId").value;
+      const { data } = await supabase.from("hospitals").select("id, name");
+      if (data) {
+        window.hospitalDirectory = {}; // Cache for later use
+        const select = document.getElementById("requestReceiver");
+        select.innerHTML = '<option value="">Select Target Hospital...</option>';
+        data.forEach(h => {
+          window.hospitalDirectory[h.id] = h.name;
+          if (h.id !== hospitalId) {
+            select.innerHTML += `<option value="${h.id}">${h.name}</option>`;
+          }
+        });
+      }
+    }
+
+    // 🔹 SEND BLOOD REQUEST
+    window.sendBloodRequest = async function () {
+      const senderId = new URLSearchParams(window.location.search).get("id") || document.getElementById("hospitalId").value;
+      const receiverId = document.getElementById("requestReceiver").value;
+      const bloodGroup = document.getElementById("requestBloodGroup").value;
+      const units = document.getElementById("requestUnits").value;
+
+      if (!senderId || !receiverId || !bloodGroup || !units) return alert("Please fill all request fields!");
+
+      const { error } = await supabase.from("blood_transfers").insert({
+        sender_id: senderId,
+        receiver_id: receiverId,
+        blood_group: bloodGroup,
+        units: parseInt(units),
+        status: "PENDING"
+      });
+
+      if (error) {
+        console.error("Failed to send request", error);
+        alert("Action failed! Have you created the 'blood_transfers' table in Supabase?");
+      } else {
+        logAudit("REQUEST_CREATED", `Requested ${units} units of ${bloodGroup} from another hospital.`);
+        alert("Blood transfer request submitted successfully!");
+        document.getElementById("requestUnits").value = "";
+        loadInboxAndHistory();
+      }
+    };
+
+    // 🔹 LOAD INBOX & HISTORY
+    window.loadInboxAndHistory = async function () {
+      const hospitalId = new URLSearchParams(window.location.search).get("id") || document.getElementById("hospitalId").value;
+      if (!hospitalId) return;
+
+      // Ensure directory is loaded
+      if (!window.hospitalDirectory) await loadHospitalsForRequest();
+
+      // PENDING AUTHORIZATIONS (Incoming)
+      const { data: incoming, error } = await supabase
+        .from("blood_transfers")
+        .select("*")
+        .eq("receiver_id", hospitalId)
+        .eq("status", "PENDING")
+        .order("created_at", { ascending: false });
+
+      const list = document.getElementById("inboxList");
+      list.innerHTML = "";
+
+      if (error) {
+        list.innerHTML = "<p>Database table 'blood_transfers' not found.</p>";
+      } else if (!incoming || incoming.length === 0) {
+        list.innerHTML = "<p>No pending transfer requests.</p>";
+      } else {
+        incoming.forEach(r => {
+          const senderName = window.hospitalDirectory[r.sender_id] || "Unknown Hospital";
+          list.innerHTML += `
+            <div style="background: rgba(255,255,255,0.1); padding: 15px; margin-bottom: 12px; border-radius: 8px; text-align: left;">
+              <strong style="color: #f25f5c; font-size: 18px;">Emergency Request from ${senderName}</strong><br/>
+              <p style="margin-top: 8px; font-size: 18px;">Needs <b>${r.units} units</b> of <b>${r.blood_group}</b></p>
+              <div style="display: flex; gap: 10px; margin-top: 15px;">
+                <button style="background: #20e3b2; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; color: black; font-weight: bold;" onclick="approveRequest('${r.id}', '${r.blood_group}', ${r.units})">Approve & Deduct</button>
+                <button style="background: rgba(255,255,255,0.2); border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; color: white;" onclick="rejectRequest('${r.id}')">Reject</button>
+              </div>
+            </div>
+          `;
+        });
+      }
+
+      // LOAD TRANSFER HISTORY & AUDIT LOGS
+      const { data: history } = await supabase
+        .from("blood_transfers")
+        .select("*")
+        .or(`sender_id.eq.${hospitalId},receiver_id.eq.${hospitalId}`)
+        .neq("status", "PENDING")
+        .order("created_at", { ascending: false })
+        .limit(10);
+
+      const histList = document.getElementById("historyList");
+      histList.innerHTML = "";
+
+      if (!history || history.length === 0) {
+        histList.innerHTML = "<p>No completed transactions found.</p>";
+      } else {
+        history.forEach(r => {
+          const senderName = window.hospitalDirectory[r.sender_id] || "Unknown";
+          const receiverName = window.hospitalDirectory[r.receiver_id] || "Unknown";
+          const isSender = r.sender_id === hospitalId;
+          const statusColor = r.status === 'ISSUED' || r.status === 'APPROVED' ? '#20e3b2' : '#ff4757';
+
+          let actionBtn = "";
+          // If approved/issued, allow documentation generation
+          if (r.status === 'ISSUED' || r.status === 'APPROVED') {
+            // Pass data safely as JSON payload
+            const payload = encodeURIComponent(JSON.stringify({
+              id: r.id, date: r.created_at, sender: senderName, receiver: receiverName, bg: r.blood_group, units: r.units
+            }));
+            actionBtn = `<button style="background: #0cebeb; border: none; padding: 6px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; display: block; margin-top: 10px;" onclick="generatePDF('${payload}')">Download PDF Form</button>`;
+          }
+
+          histList.innerHTML += `
+            <div style="background: rgba(255,255,255,0.05); border-left: 4px solid ${statusColor}; padding: 10px 15px; margin-bottom: 10px; border-radius: 4px; text-align: left; font-size: 14px;">
+              Transfer of ${r.units} units (${r.blood_group}) from ${senderName} to ${receiverName}<br/>
+              Status: <span style="color: ${statusColor}; font-weight: bold;">${r.status}</span>
+              <br/><small style="color: #aaa;">${new Date(r.created_at).toLocaleString()}</small>
+              ${actionBtn}
+            </div>
+          `;
+        });
+      }
+    };
+
+    // 🔹 APPROVE REQUEST
+    window.approveRequest = async function (requestId, bloodGroup, requiredUnits) {
+      const hospitalId = new URLSearchParams(window.location.search).get("id") || document.getElementById("hospitalId").value;
+
+      // Fetch request details to know who asked for the blood
+      const { data: transferReq } = await supabase.from("blood_transfers").select("sender_id").eq("id", requestId).maybeSingle();
+      if (!transferReq) {
+        return alert("Failed to fetch request information.");
+      }
+      const requesterId = transferReq.sender_id;
+
+      // 1. Verify inventory
+      const { data: inv, error: invErr } = await supabase.from("inventory").select("units").eq("hospital_id", hospitalId).eq("blood_group", bloodGroup).maybeSingle();
+
+      if (invErr) {
+        console.error("Fetch inventory error:", invErr);
+        return alert("Error fetching inventory. Check console for details.");
+      }
+
+      const span = document.getElementById(`units-${bloodGroup}`);
+      const uiUnits = span ? parseInt(span.textContent) : 0;
+
+      if (!inv || inv.units < requiredUnits) {
+        if (uiUnits >= requiredUnits) {
+          return alert(`Insufficient Inventory Saved! You have ${uiUnits} units in the UI, but they haven't been saved. Please click "Save Changes" at the top before approving.`);
+        }
+        return alert(`Insufficient Inventory! You only have ${inv ? inv.units : 0} units of ${bloodGroup} saved in the database. Please add more units using the + button and click "Save Changes".`);
+      }
+
+      // 2. Deduct logically from the giver
+      const newUnits = inv.units - requiredUnits;
+      await supabase.from("inventory").update({ units: newUnits }).eq("hospital_id", hospitalId).eq("blood_group", bloodGroup);
+
+      // 2.5 Add to the receiver (the hospital that asked for the blood)
+      const { data: reqInv } = await supabase.from("inventory").select("units").eq("hospital_id", requesterId).eq("blood_group", bloodGroup).maybeSingle();
+      
+      if (reqInv) {
+        await supabase.from("inventory").update({ units: reqInv.units + requiredUnits }).eq("hospital_id", requesterId).eq("blood_group", bloodGroup);
+      } else {
+        await supabase.from("inventory").insert({ hospital_id: requesterId, blood_group: bloodGroup, units: requiredUnits });
+      }
+
+      // 3. Update Transfer Status
+      await supabase.from("blood_transfers").update({ status: 'ISSUED' }).eq("id", requestId);
+
+      // 4. Log Audit & Refresh UI
+      logAudit("TRANSFER_APPROVED", `Approved request ${requestId}. Deducted ${requiredUnits} units of ${bloodGroup}.`);
+      alert(`Request Approved. Inventory deducted and transferred successfully!`);
+      loadInventory();
+      loadInboxAndHistory();
+    };
+
+    // 🔹 REJECT REQUEST
+    window.rejectRequest = async function (requestId) {
+      await supabase.from("blood_transfers").update({ status: 'REJECTED' }).eq("id", requestId);
+      logAudit("TRANSFER_REJECTED", `Rejected request ${requestId}.`);
+      loadInboxAndHistory();
+    };
+
+    // 🔹 GENERATE PDF FORM (Using jsPDF)
+    window.generatePDF = function (encodedPayload) {
+      const data = JSON.parse(decodeURIComponent(encodedPayload));
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+
+      doc.setFontSize(22);
+      doc.text("BLOOD BUDDY", 105, 20, null, null, "center");
+      doc.setFontSize(16);
+      doc.text("Official Blood Issue / Transfer Form", 105, 30, null, null, "center");
+
+      doc.setFontSize(12);
+      doc.text(`Transaction ID: ${data.id}`, 20, 50);
+      doc.text(`Date of Issue: ${new Date(data.date).toLocaleString()}`, 20, 60);
+
+      doc.setLineWidth(0.5);
+      doc.line(20, 65, 190, 65);
+
+      doc.text(`Issued To (Receiver): ${data.receiver}`, 20, 80);
+      doc.text(`Originating Lab (Sender): ${data.sender}`, 20, 90);
+
+      doc.setFontSize(14);
+      doc.text("Blood Components Authorized:", 20, 110);
+      doc.setFontSize(12);
+      doc.text(`- Component Type: Packed Red Blood Cells / Whole Blood`, 25, 120);
+      doc.text(`- Blood Group: ${data.bg}`, 25, 130);
+      doc.text(`- Quantity Issued: ${data.units} Units`, 25, 140);
+
+      doc.line(20, 150, 190, 150);
+
+      doc.text("Authorized Signature:", 20, 170);
+      doc.text("_________________________", 20, 180);
+
+      doc.setFontSize(10);
+      doc.text("This document is systematically generated and digitally audited.", 105, 280, null, null, "center");
+
+      // Name the file
+      doc.save(`Transfer_Form_${data.id.substring(0, 8)}.pdf`);
+      logAudit("DOCUMENT_GENERATED", `Downloaded PDF documentation for Transfer ${data.id}.`);
+    };
+
+    window.onload = function () {
+      loadInventory();
+      loadHospitalsForRequest();
+      loadInboxAndHistory();
+    };
+  </script>
+
+
+
+</body>
+
+</html>

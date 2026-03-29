@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Live Blood Availability</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;800&display=swap');
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #0a0b0e;
+      color: white;
+      padding: 60px 40px;
+      margin: 0;
+      min-height: 100vh;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 50px;
+      font-family: 'Outfit', sans-serif;
+      font-size: 36px;
+      font-weight: 700;
+      background: linear-gradient(90deg, #ff4757, #ff6b81);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    table {
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+      border-collapse: separate;
+      border-spacing: 0;
+      background: rgba(255, 255, 255, 0.03);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6);
+    }
+
+    th,
+    td {
+      padding: 20px;
+      text-align: center;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    th {
+      background: rgba(255, 71, 87, 0.1);
+      color: #ff4757;
+      font-weight: 600;
+      font-feature-settings: 'tnum';
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-size: 14px;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    tr {
+      transition: background 0.3s;
+    }
+
+    tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .green {
+      color: #20e3b2;
+      font-weight: 600;
+    }
+
+    .yellow {
+      color: #ffd000;
+      font-weight: 600;
+    }
+
+    .red {
+      color: #ff4757;
+      font-weight: 600;
+      text-shadow: 0 0 10px rgba(255, 71, 87, 0.4);
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>🩸 Live Blood Availability Board</h1>
+
+  <table id="board">
+    <thead>
+      <tr>
+        <th>Hospital</th>
+        <th>A+</th>
+        <th>B+</th>
+        <th>O+</th>
+        <th>AB+</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <!-- <script>
+async function loadBoard() {
+  const res = await fetch("http://localhost:8080/api/hospitals");
+  const hospitals = await res.json();
+
+  const tbody = document.querySelector("#board tbody");
+  tbody.innerHTML = "";
+
+  hospitals.forEach(h => {
+    const row = document.createElement("tr");
+
+    function statusCell(value) {
+      if (value >= 10) return `<td class="green">🟢 ${value}</td>`;
+      if (value >= 5) return `<td class="yellow">🟡 ${value}</td>`;
+      return `<td class="red">🔴 ${value}</td>`;
+    }
+
+    let overall = "OK";
+    if (h.inventory.Aplus < 5 || h.inventory.Bplus < 5 || h.inventory.Oplus < 5) {
+      overall = "CRITICAL";
+    }
+
+    row.innerHTML = `
+      <td>${h.name}</td>
+      ${statusCell(h.inventory.Aplus)}
+      ${statusCell(h.inventory.Bplus)}
+      ${statusCell(h.inventory.Oplus)}
+      ${statusCell(h.inventory.ABplus)}
+      <td>${overall}</td>
+    `;
+
+    tbody.appendChild(row);
+  });
+}
+
+loadBoard();
+setInterval(loadBoard, 8080);
+</script> -->
+
+</body>
+
+</html>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+<script src="dashboard.js"></script>

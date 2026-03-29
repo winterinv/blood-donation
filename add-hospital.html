@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Add Hospital</title>
+</head>
+<body>
+
+  <h2>Add Test Hospital</h2>
+
+  <button onclick="addHospital()">Add Hospital</button>
+
+  <script>
+    async function addHospital() {
+      const res = await fetch("http://localhost:5000/api/hospitals/add", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          name: "City General Hospital",
+          city: "Delhi",
+          state: "Delhi",
+          pincode: "110001",
+          type: "Private",
+          verified: true
+        })
+      });
+
+      const data = await res.json();
+      alert("Hospital added!\n\nHospital ID:\n" + data.hospital._id);
+      console.log(data);
+    }
+  </script>
+
+</body>
+</html>

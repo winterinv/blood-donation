@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Hospital Registration - Blood Buddy</title>
+  <link rel="stylesheet" href="theme.css?v=2.0">
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background-image:
+        radial-gradient(circle at 0% 0%, rgba(255, 71, 87, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at 100% 100%, rgba(20, 184, 166, 0.05) 0%, transparent 40%);
+    }
+
+    .auth-card {
+      width: 100%;
+      max-width: 450px;
+      padding: 3rem 2.5rem;
+      text-align: center;
+      position: relative;
+    }
+
+    .home-link {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: 0.2s;
+    }
+
+    .home-link:hover {
+      color: var(--primary);
+    }
+
+    .auth-card h2 {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+      color: var(--text-main);
+    }
+
+    .subtitle {
+      color: var(--text-muted);
+      margin-bottom: 2rem;
+      font-size: 0.95rem;
+    }
+
+    .input-group {
+      position: relative;
+      margin-bottom: 1.25rem;
+    }
+
+    .input-group i {
+      position: absolute;
+      left: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      font-size: 1.1rem;
+    }
+
+    .input-group input,
+    .input-group select {
+      padding-left: 3.2rem;
+      /* Make room for icon */
+      width: 100%;
+    }
+
+    /* Custom Select Styling */
+    select.input-base {
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+      background-repeat: no-repeat;
+      background-position: right 1rem center;
+      background-size: 1em;
+      color: var(--text-main);
+      cursor: pointer;
+    }
+
+    .submit-btn {
+      width: 100%;
+      margin-top: 1rem;
+    }
+
+    .links-area {
+      margin-top: 2rem;
+      font-size: 0.95rem;
+    }
+
+    .links-area a {
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 600;
+      transition: color 0.2s;
+    }
+
+    .links-area a:hover {
+      color: var(--primary-hover);
+    }
+  </style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" />
+</head>
+
+<body>
+
+  <div class="glass-panel auth-card">
+    <a href="index.html" class="home-link"><i class="fas fa-arrow-left"></i> Home</a>
+
+    <div style="margin-bottom: 1.5rem;">
+      <i class="fas fa-hospital" style="font-size: 2.5rem; color: var(--primary);"></i>
+    </div>
+    <h2>Register Hospital</h2>
+    <p class="subtitle">Join the Blood Buddy Coordination Network</p>
+
+    <form id="hospitalForm">
+
+      <div class="input-group">
+        <i class="fas fa-envelope icon"></i>
+        <input id="email" type="email" class="input-base" placeholder="Hospital Email" required />
+      </div>
+
+      <div class="input-group">
+        <i class="fas fa-lock icon"></i>
+        <input id="password" type="password" class="input-base" placeholder="Password" required />
+      </div>
+
+      <div class="input-group">
+        <i class="fas fa-h-square icon"></i>
+        <input id="name" class="input-base" placeholder="Hospital Name" required />
+      </div>
+
+      <div class="input-group">
+        <i class="fas fa-map-marker-alt icon"></i>
+        <input id="city" class="input-base" placeholder="City" required />
+      </div>
+
+      <div class="input-group">
+        <i class="fas fa-building icon"></i>
+        <select id="type" class="input-base">
+          <option value="Private">Private</option>
+          <option value="Government">Government</option>
+          <option value="NGO">NGO</option>
+        </select>
+      </div>
+
+      <button type="submit" class="btn btn-primary submit-btn">Create Account</button>
+    </form>
+
+    <div class="links-area">
+      <p>Already registered? <a href="hospital-login.html">Login here</a></p>
+    </div>
+  </div>
+
+  <script type="module" src="hospital-register.js"></script>
+
+</body>
+
+</html>
