@@ -176,6 +176,7 @@
     <header class="admin-nav">
         <h2>Blood Buddy <span class="admin-badge">ADMIN</span></h2>
         <div>
+            <button class="logout-btn" onclick="toggleDarkMode()" style="margin-right: 15px; border-color: var(--border-color);">🌙 Theme</button>
             <button id="sim-btn" class="logout-btn" style="border-color: var(--primary); color: var(--primary); margin-right: 15px;" onclick="startSimulation()">⚡ Start Live Simulator</button>
             <button class="logout-btn" onclick="logoutAdmin()">Secure Logout</button>
         </div>
@@ -263,6 +264,16 @@
 
     <script type="module" src="admin.js"></script>
     <script>
+        // Check local storage setting immediately
+        if(localStorage.getItem('bb_dark_mode') === 'true') {
+            document.body.classList.add('dark-mode');
+        }
+
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            localStorage.setItem('bb_dark_mode', document.body.classList.contains('dark-mode'));
+        }
+
         function logoutAdmin() {
             localStorage.removeItem('bb_admin_auth');
             window.location.href = 'admin-login.html';

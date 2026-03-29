@@ -18,6 +18,7 @@
     <button class="primary-btn" onclick="loadInventory()">Load Inventory</button>
     <button class="primary-btn" onclick="saveInventory()"
       style="background: linear-gradient(135deg, #0cebeb, #20e3b2, #29ffc6); color: black;">Save Changes</button>
+    <button class="primary-btn" onclick="toggleDarkMode()" style="background: var(--bg-secondary); color: var(--text-main); border: 1px solid var(--border-color);">🌙 Theme</button>
   </div>
 
   <div id="grid" class="grid"></div>
@@ -100,6 +101,12 @@
       window.location.href = "hospital-profile.html?id=" + hospitalId;
     };
 
+    // 🔹 DARK MODE TOGGLE
+    window.toggleDarkMode = function() {
+      document.body.classList.toggle('dark-mode');
+      localStorage.setItem('bb_dark_mode', document.body.classList.contains('dark-mode'));
+    };
+
     // 🔹 LOAD INVENTORY
     async function loadInventory() {
       const hospitalId =
@@ -134,7 +141,11 @@
         const card = document.createElement("div");
         card.className = "card";
 
-        if (units <= 5) card.classList.add("low");
+        if (units === 0) {
+          card.classList.add("critical");
+        } else if (units <= 5) {
+          card.classList.add("low");
+        }
 
         card.innerHTML = `
       <h3>${bg}</h3>
@@ -462,13 +473,12 @@
     };
 
     window.onload = function () {
+      if(localStorage.getItem('bb_dark_mode') === 'true') document.body.classList.add('dark-mode');
       loadInventory();
       loadHospitalsForRequest();
       loadInboxAndHistory();
     };
   </script>
-
-
 
 </body>
 
